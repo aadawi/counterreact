@@ -4,6 +4,8 @@ import "./App.css";
 import NavBar from "./components/navbar";
 import Counters from "./components/counters";
 import axios from "axios";
+import Developers from "./components/developers";
+
 class App extends Component {
   state = {
     counters: [
@@ -15,7 +17,8 @@ class App extends Component {
     persons: {
       age: "",
       name: ""
-    }
+    },
+    developers: [{ name: "test", id: 1 }]
   };
 
   handleIncrement = counter => {
@@ -41,7 +44,29 @@ class App extends Component {
       console.log(persons.name);
       console.log(persons.age);
     });
+
+    axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
+      const developersDate = res.data;
+      const developers = developersDate._embedded.developers;
+      console.log(">>>>>>>>>>>>" + developers);
+      this.setState({ developers });
+    });
   }
+
+  handleDevDelete = devId => {
+    console.log("handle delete", devId);
+    axios
+      .delete("https://curdama.herokuapp.com/api/developers/" + devId)
+      .then(res => {
+        axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
+          const developersDate = res.data;
+          const developers = developersDate._embedded.developers;
+          console.log(">>>>>>>>>>>>" + developers);
+          this.setState({ developers });
+        });
+      });
+    console.log("handle delete >>>>>>>>>>>>>>>. ", devId);
+  };
 
   handleReset = () => {
     const counters = this.state.counters.map(c => {
@@ -57,13 +82,18 @@ class App extends Component {
         <NavBar
           totalCounters={this.state.counters.filter(c => c.value > 0).length}
           persons={this.state.persons}
+          developers={this.state.developers}
         />
         <main className="container">
-          <Counters
+          {/* <Counters
             counters={this.state.counters}
             onReset={this.handleReset}
             onDelete={this.handleDelete}
             onIncrement={this.handleIncrement}
+          /> */}
+          <Developers
+            developers={this.state.developers}
+            onDelete={this.handleDevDelete}
           />
         </main>
       </React.Fragment>

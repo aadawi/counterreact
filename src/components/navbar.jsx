@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
 // Stateless Functional Componenet
-const NavBar = ({ totalCounters, persons }) => {
+const NavBar = ({ totalCounters, persons, developers }) => {
   return (
     <nav class="navbar navbar-light bg-light">
       <a class="navbar-brand" href="#">
