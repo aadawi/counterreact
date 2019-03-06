@@ -3,7 +3,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import NavBar from "./components/navbar";
 import Counters from "./components/counters";
-
+import axios from "axios";
 class App extends Component {
   state = {
     counters: [
@@ -11,7 +11,11 @@ class App extends Component {
       { id: 2, value: 0 },
       { id: 3, value: 0 },
       { id: 4, value: 0 }
-    ]
+    ],
+    persons: {
+      age: "",
+      name: ""
+    }
   };
 
   handleIncrement = counter => {
@@ -29,6 +33,16 @@ class App extends Component {
     this.setState({ counters });
   };
 
+  componentDidMount() {
+    axios.get("https://curdama.herokuapp.com/test").then(res => {
+      const persons = res.data;
+
+      this.setState({ persons });
+      console.log(persons.name);
+      console.log(persons.age);
+    });
+  }
+
   handleReset = () => {
     const counters = this.state.counters.map(c => {
       c.value = 0;
@@ -42,6 +56,7 @@ class App extends Component {
       <React.Fragment>
         <NavBar
           totalCounters={this.state.counters.filter(c => c.value > 0).length}
+          persons={this.state.persons}
         />
         <main className="container">
           <Counters

@@ -1,13 +1,21 @@
 import React, { Component } from "react";
 
 // Stateless Functional Componenet
-const NavBar = ({ totalCounters }) => {
+const NavBar = ({ totalCounters, persons }) => {
   return (
     <nav class="navbar navbar-light bg-light">
       <a class="navbar-brand" href="#">
         Navbar{" "}
-        <span className="badge badge-pill badge-secondary">
+        <span className="badge badge-pill badge-secondary m-2">
           {totalCounters}
+        </span>
+        name:{" "}
+        <span className="badge badge-pill badge-secondary m-2">
+          {persons.name}
+        </span>
+        age:{" "}
+        <span className="badge badge-pill badge-secondary m-2">
+          {persons.age}
         </span>
       </a>
     </nav>
