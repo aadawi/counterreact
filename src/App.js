@@ -110,6 +110,16 @@ class App extends Component {
           const developers = developersDate._embedded.developers;
           console.log(">>>>>>>>>>>>" + developers);
           this.setState({ developers });
+
+          const newAlert = {
+            id: new Date().getTime(),
+            type: "info",
+            headline: "Time to say goodbye",
+            message: "Unfortunately user deleted"
+          };
+
+          const alerts = [...this.state.alerts, newAlert];
+          this.setState({ alerts });
         });
       });
   };
