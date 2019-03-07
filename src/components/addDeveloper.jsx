@@ -7,11 +7,21 @@ class AddDeveloper extends Component {
   state = { developerName: "" };
 
   setDeveloperName = e => {
-    console.log(">>>> Devname" + e.target.value);
     const developerName = e.target.value;
     this.setState({ developerName });
   };
 
+  handleKeyPress = e => {
+    if (e.key === "Enter") {
+      console.log("do validate");
+    }
+  };
+
+  handleShow = () => {
+    const developerName = "";
+    this.setState({ developerName });
+    this.props.onShow;
+  };
   render() {
     return (
       <React.Fragment>
@@ -42,7 +52,8 @@ class AddDeveloper extends Component {
                     aria-describedby="inputGroup-sizing-sm"
                     aria-label="Name"
                     className="form-control"
-                    onChange={e => this.setDeveloperName(e)}
+                    onKeyPress={this.handleKeyPress}
+                    onBlur={e => this.setDeveloperName(e)}
                   />
                 </div>
               </p>
