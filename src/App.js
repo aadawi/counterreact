@@ -5,6 +5,8 @@ import NavBar from "./components/navbar";
 import Counters from "./components/counters";
 import axios from "axios";
 import Developers from "./components/developers";
+import AddDeveloper from "./components/addDeveloper";
+import Test from "./components/test";
 
 class App extends Component {
   state = {
@@ -18,7 +20,8 @@ class App extends Component {
       age: "",
       name: ""
     },
-    developers: [{ name: "test", id: 1 }]
+    developers: [],
+    show: false
   };
 
   handleIncrement = counter => {
@@ -53,6 +56,24 @@ class App extends Component {
     });
   }
 
+  handleAddDev = devName => {
+    console.log(devName);
+    console.log(">>>> ADD");
+    axios
+      .post("https://curdama.herokuapp.com/api/developers", { name: devName })
+      .then(res => {
+        console.log(">>" + res);
+        const show = false;
+        this.setState({ show });
+        axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
+          const developersDate = res.data;
+          const developers = developersDate._embedded.developers;
+          console.log(">>>>>>>>>>>>" + developers);
+          this.setState({ developers });
+        });
+      });
+  };
+
   handleDevDelete = devId => {
     console.log("handle delete", devId);
     axios
@@ -76,26 +97,64 @@ class App extends Component {
     this.setState({ counters });
   };
 
+  handleAdd = () => {
+    console.log(">>>> ADD");
+    axios
+      .post("https://curdama.herokuapp.com/api/developers", { name: "ahmad" })
+      .then(res => {
+        console.log(">>" + res);
+        const show = false;
+        this.setState({ show });
+        axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
+          const developersDate = res.data;
+          const developers = developersDate._embedded.developers;
+          console.log(">>>>>>>>>>>>" + developers);
+          this.setState({ developers });
+        });
+      });
+  };
+
+  handleShow = () => {
+    console.log(">>>> SHOW");
+    this.setState({ show: true });
+  };
+
+  handleCloseWin = () => {
+    console.log(">>>> CLOSE");
+    const show = false;
+    this.setState({ show });
+  };
+
   render() {
     return (
       <React.Fragment>
-        <NavBar
-          totalCounters={this.state.counters.filter(c => c.value > 0).length}
-          persons={this.state.persons}
-          developers={this.state.developers}
-        />
-        <main className="container">
-          {/* <Counters
+        <div class="container-fluid">
+          <NavBar
+            totalCounters={this.state.counters.filter(c => c.value > 0).length}
+            persons={this.state.persons}
+            developers={this.state.developers}
+          />
+          <main className="container">
+            {/* <Counters
             counters={this.state.counters}
             onReset={this.handleReset}
             onDelete={this.handleDelete}
             onIncrement={this.handleIncrement}
           /> */}
-          <Developers
-            developers={this.state.developers}
-            onDelete={this.handleDevDelete}
+            <Developers
+              developers={this.state.developers}
+              onDelete={this.handleDevDelete}
+            />
+
+            <Test />
+          </main>
+          <AddDeveloper
+            onCloseWin={this.handleCloseWin}
+            onShow={this.handleShow}
+            showWin={this.state.show}
+            onDevAdd={this.handleAddDev}
           />
-        </main>
+        </div>
       </React.Fragment>
     );
   }

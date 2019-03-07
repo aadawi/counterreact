@@ -8,20 +8,18 @@ class Developer extends Component {
 
   render() {
     return (
-      <div>
-        <button
-          onClick={() => this.props.onDelete(this.props.developer.id)}
-          className="btn btn-secondary btn-sm"
-        >
-          Delete
-        </button>
-        <span className="badge badge-pill badge-primary m-2">
-          id# {this.props.developer.id}
-        </span>
-        <span className="badge badge-pill badge-primary">
-          name: {this.props.developer.name}
-        </span>
-      </div>
+      <tr>
+        <th scope="row">{this.props.developer.id}</th>
+        <td>{this.props.developer.name}</td>
+        <td>
+          <button
+            onClick={() => this.props.onDelete(this.props.developer.id)}
+            className="btn btn-secondary btn-sm"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
     );
   }
 }
