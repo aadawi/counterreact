@@ -11,6 +11,11 @@ class AddDeveloper extends Component {
     this.setState({ developerName });
   };
 
+  componentWillReceiveProps() {
+    const developerName = "";
+    this.setState({ developerName });
+  }
+
   handleKeyPress = e => {
     if (e.key === "Enter") {
       console.log("do validate");
@@ -27,7 +32,7 @@ class AddDeveloper extends Component {
       <React.Fragment>
         <Button
           variant="primary"
-          className="align-middle"
+          className="align-middle m-2"
           onClick={this.props.onShow}
         >
           Add new developer
