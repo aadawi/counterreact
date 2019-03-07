@@ -14,7 +14,7 @@ class Developer extends Component {
         <td>
           <button
             onClick={() => this.props.onDelete(this.props.developer.id)}
-            className="btn btn-secondary btn-sm"
+            className="btn btn-danger btn-sm"
           >
             Delete
           </button>
