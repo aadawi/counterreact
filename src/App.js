@@ -1,13 +1,14 @@
 import React, { Component } from "react";
-import logo from "./logo.svg";
 import "./App.css";
-import NavBar from "./components/navbar";
-import Counters from "./components/counters";
 import axios from "axios";
-import Developers from "./components/developers";
-import AddDeveloper from "./components/addDeveloper";
-import Test from "./components/test";
 import NotifierGenerator from "./components/notifierGenerator";
+import "font-awesome/css/font-awesome.min.css";
+import "react-bootstrap-table/dist/react-bootstrap-table-all.min.css";
+import {
+  BootstrapTable,
+  TableHeaderColumn,
+  pagination
+} from "react-bootstrap-table";
 
 class App extends Component {
   state = {
@@ -23,7 +24,9 @@ class App extends Component {
     },
     developers: [],
     show: false,
-    alerts: []
+    alerts: [],
+    serverUlr: "https://curdama.herokuapp.com"
+    //https://curdama.herokuapp.com
   };
 
   handleIncrement = counter => {
@@ -42,7 +45,8 @@ class App extends Component {
   };
 
   componentDidMount() {
-    axios.get("https://curdama.herokuapp.com/test").then(res => {
+    const testUrl = this.state.serverUlr + "/test";
+    axios.get(testUrl).then(res => {
       const persons = res.data;
 
       this.setState({ persons });
@@ -50,7 +54,9 @@ class App extends Component {
       console.log(persons.age);
     });
 
-    axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
+    const url = this.state.serverUlr + "/api/developers?page=0&size=100";
+
+    axios.get(url).then(res => {
       const developersDate = res.data;
       const developers = developersDate._embedded.developers;
       console.log(">>>>>>>>>>>>" + developers);
@@ -84,44 +90,28 @@ class App extends Component {
     const alerts = [...this.state.alerts, newAlert];
     this.setState({ alerts });
 
-    console.log(devName);
-    axios
-      .post("https://curdama.herokuapp.com/api/developers", { name: devName })
-      .then(res => {
-        console.log(">>" + res);
-        const show = false;
-        this.setState({ show });
-        axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
-          const developersDate = res.data;
-          const developers = developersDate._embedded.developers;
-          console.log(">>>>>>>>>>>>" + developers);
-          this.setState({ developers });
-        });
-      });
+    const url = this.state.serverUlr + "/api/developers";
+    axios.post(url, { name: devName }).then(res => {
+      const show = false;
+      this.setState({ show });
+      this.refreshDevelopersList();
+    });
   };
 
   handleDevDelete = devId => {
     console.log("handle delete", devId);
-    axios
-      .delete("https://curdama.herokuapp.com/api/developers/" + devId)
-      .then(res => {
-        axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
-          const developersDate = res.data;
-          const developers = developersDate._embedded.developers;
-          console.log(">>>>>>>>>>>>" + developers);
-          this.setState({ developers });
+    const url = this.state.serverUlr + "/api/developers" + devId;
+    axios.delete(url).then(res => {
+      const newAlert = {
+        id: new Date().getTime(),
+        type: "info",
+        headline: "Time to say goodbye",
+        message: "User deleted"
+      };
 
-          const newAlert = {
-            id: new Date().getTime(),
-            type: "info",
-            headline: "Time to say goodbye",
-            message: "Unfortunately user deleted"
-          };
-
-          const alerts = [...this.state.alerts, newAlert];
-          this.setState({ alerts });
-        });
-      });
+      const alerts = [...this.state.alerts, newAlert];
+      this.setState({ alerts });
+    });
   };
 
   handleReset = () => {
@@ -144,65 +134,131 @@ class App extends Component {
     }
   };
 
-  handleAdd = () => {
-    const newAlert = {
-      id: new Date().getTime(),
-      type: "info",
-      headline: "error",
-      message: "This test 2"
-    };
-
-    const alerts = [...this.state.alerts, newAlert];
-    this.setState({ alerts });
-    console.log(this.state.alerts);
-
-    console.log(">>>>>>>>>>>>>> ADD");
+  refreshDevelopersList = () => {
     axios
-      .post("https://curdama.herokuapp.com/api/developers", { name: "ahmad" })
+      .get(this.state.serverUlr + "/api/developers?page=0&size=100")
       .then(res => {
-        console.log(">>" + res);
-        const show = false;
-        this.setState({ show });
-        axios.get("https://curdama.herokuapp.com/api/developers/").then(res => {
-          const developersDate = res.data;
-          const developers = developersDate._embedded.developers;
-          console.log(">>>>>>>>>>>>" + developers);
-          this.setState({ developers });
-        });
+        const developersDate = res.data;
+        const developers = developersDate._embedded.developers;
+        this.setState({ developers });
       });
   };
 
   handleShow = () => {
-    console.log(">>>> SHOW");
     this.setState({ show: true });
   };
 
   handleCloseWin = () => {
-    console.log(">>>> CLOSE");
     const show = false;
     this.setState({ show });
   };
 
+  onAfterInsertRow = row => {
+    console.log(row.name);
+    this.handleAddDev(row.name);
+  };
+
+  onBeforeDeleteRow = rowKeys => {
+    alert(1);
+    return true;
+  };
+
+  onAfterDeleteRow = rowKeys => {
+    const url = this.state.serverUlr + "/api/developers/" + rowKeys;
+
+    axios.delete(url).then(res => {
+      console.log(">>" + res);
+    });
+    return true;
+  };
+
+  onAfterSaveCell(row, cellName, cellValue) {
+    this.refreshDevelopersList();
+    console.log(row);
+    console.log(row.id);
+    console.log(row.name);
+    return true;
+  }
+
+  showMessage(message, type, headline) {
+    const newAlert = {
+      id: new Date().getTime(),
+      type: type,
+      headline: headline,
+      message: message
+    };
+    const alerts = [...this.state.alerts, newAlert];
+    this.setState({ alerts });
+  }
+
+  onBeforeSaveCell = (row, cellName, cellValue) => {
+    if (cellValue === null || cellValue === "") {
+      this.showMessage(
+        "Are you kidding developer name can not be null ",
+        "danger",
+        "Error"
+      );
+      return false;
+    }
+
+    const url = this.state.serverUlr + "/api/developers/" + row.id;
+    axios.put(url, { name: cellValue }).then(res => {
+      this.showMessage("User updated successfully", "info", "Update");
+    });
+    return true;
+  };
+
+  nameValidator(value, row) {
+    if (value == null) {
+      return "Developer name can not be null";
+    }
+    return true;
+  }
+  jobStatusValidator(value) {
+    if (value == null) {
+      return "Job Status must be a integer!";
+    }
+    return true;
+  }
+
   render() {
+    const cellEditProp = {
+      mode: "dbclick",
+      blurToEscape: true,
+      beforeSaveCell: this.onBeforeSaveCell,
+      afterSaveCell: this.onAfterSaveCell
+    };
+
+    const options = {
+      afterDeleteRow: this.onAfterDeleteRow,
+      beforeDeleteRow: this.onBeforeDeleteRow,
+      afterInsertRow: this.onAfterInsertRow
+    };
+
+    const selectRowProp = {
+      mode: "radio"
+    };
+
     return (
       <React.Fragment>
-        <div class="container-fluid">
+        <div className="main-dev-margin">
+          {/*<Employees />
           <NavBar
             totalCounters={this.state.counters.filter(c => c.value > 0).length}
             persons={this.state.persons}
             developers={this.state.developers}
           />
           <main className="container">
-            {/* <Counters
+            { <Counters
             counters={this.state.counters}
             onReset={this.handleReset}
             onDelete={this.handleDelete}
             onIncrement={this.handleIncrement}
-          /> */}
-            <Developers
+          /> }
+            { <Developers
               developers={this.state.developers}
               onDelete={this.handleDevDelete}
-            />
+            /> 
 
             <Test />
           </main>
@@ -211,7 +267,7 @@ class App extends Component {
             onShow={this.handleShow}
             showWin={this.state.show}
             onDevAdd={this.handleAddDev}
-          />
+          />*/}
           <div>
             <NotifierGenerator
               type="danger"
@@ -221,6 +277,35 @@ class App extends Component {
               onAlertDismissed={this.onAlertDismissed}
             />
           </div>
+
+          <BootstrapTable
+            data={this.state.developers}
+            options={options}
+            striped
+            search={true}
+            hover
+            deleteRow={true}
+            insertRow={true}
+            cellEdit={cellEditProp}
+            selectRow={selectRowProp}
+            pagination
+          >
+            <TableHeaderColumn
+              hiddenOnInsert
+              autoValue
+              isKey
+              dataField="id"
+              cellEdit={false}
+            >
+              Developer Id
+            </TableHeaderColumn>
+            <TableHeaderColumn
+              dataField="name"
+              editable={{ type: "text", validator: this.jobStatusValidator }}
+            >
+              Developer Name
+            </TableHeaderColumn>
+          </BootstrapTable>
         </div>
       </React.Fragment>
     );
