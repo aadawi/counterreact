@@ -66,52 +66,67 @@ class App extends Component {
 
   handleAddDev = devName => {
     if (devName === null || devName === "") {
-      const newAlert = {
-        id: new Date().getTime(),
-        type: "danger",
-        headline: "Error ",
-        message: "Are you kidding developer name can not be null "
-      };
-
-      const alerts = [...this.state.alerts, newAlert];
-      this.setState({ alerts });
-      return;
+      this.showErrorMessage(
+        "Are you kidding developer name can not be null ",
+        "Error"
+      );
+      return false;
     }
 
-    const newAlert = {
-      id: new Date().getTime(),
-      type: "info",
-      headline: "New member aboard",
-      message:
-        "Hola there is new developer in the house please say welcome to: " +
-        devName
-    };
-
-    const alerts = [...this.state.alerts, newAlert];
-    this.setState({ alerts });
-
     const url = this.state.serverUlr + "/api/developers";
-    axios.post(url, { name: devName }).then(res => {
-      const show = false;
-      this.setState({ show });
-      this.refreshDevelopersList();
-    });
+    axios
+      .post(
+        url,
+        { name: devName },
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+            "Access-Control-Allow-Headers":
+              "Origin, Authorization, Accept, Content-Type"
+          }
+        }
+      )
+      .then(res => {
+        console.log(res);
+
+        const show = false;
+        this.setState({ show });
+        this.refreshDevelopersList();
+        this.showMessage(
+          "Hola there is new developer in the house please say welcome to " +
+            devName,
+          "info",
+          "New Member Aboard"
+        );
+      })
+      .catch(err => {
+        this.showErrorMessage(err.message, "Error developer not added");
+        return false;
+      });
   };
 
   handleDevDelete = devId => {
     console.log("handle delete", devId);
     const url = this.state.serverUlr + "/api/developers" + devId;
-    axios.delete(url).then(res => {
-      const newAlert = {
-        id: new Date().getTime(),
-        type: "info",
-        headline: "Time to say goodbye",
-        message: "User deleted"
-      };
+    axios
+      .delete(url, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => {
+        const newAlert = {
+          id: new Date().getTime(),
+          type: "info",
+          headline: "Time to say goodbye",
+          message: "User deleted"
+        };
 
-      const alerts = [...this.state.alerts, newAlert];
-      this.setState({ alerts });
-    });
+        const alerts = [...this.state.alerts, newAlert];
+        this.setState({ alerts });
+      });
   };
 
   handleReset = () => {
@@ -153,7 +168,7 @@ class App extends Component {
     this.setState({ show });
   };
 
-  onAfterInsertRow = row => {
+  onBeforeInsertRow = row => {
     console.log(row.name);
     this.handleAddDev(row.name);
   };
@@ -178,6 +193,17 @@ class App extends Component {
     console.log(row.id);
     console.log(row.name);
     return true;
+  }
+
+  showErrorMessage(message, headline) {
+    const newAlert = {
+      id: new Date().getTime(),
+      type: "danger",
+      headline: headline,
+      message: message
+    };
+    const alerts = [...this.state.alerts, newAlert];
+    this.setState({ alerts });
   }
 
   showMessage(message, type, headline) {
@@ -232,7 +258,7 @@ class App extends Component {
     const options = {
       afterDeleteRow: this.onAfterDeleteRow,
       beforeDeleteRow: this.onBeforeDeleteRow,
-      afterInsertRow: this.onAfterInsertRow
+      beforeInsertRow: this.onBeforeInsertRow
     };
 
     const selectRowProp = {
